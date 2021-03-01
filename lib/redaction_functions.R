@@ -122,7 +122,7 @@ redacted_summary_catcat <- function(
   }
 
   if (is.logical(variable2)){
-    variable2 <- if_else(variable1, "yes", "no")
+    variable2 <- if_else(variable2, "yes", "no")
   }
 
   dat_freq <- tibble(
@@ -138,7 +138,6 @@ redacted_summary_catcat <- function(
       pct_nonmiss = (n_nonmiss/sum(n_nonmiss, na.rm=TRUE)),
     ) %>%
     select(-n_nonmiss)
-
 
 
   dat_freq_redact0 <- dat_freq %>%
