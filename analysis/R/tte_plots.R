@@ -90,13 +90,18 @@ get_colour_scales <- function(colour_type = "qual"){
     )
   } else if(colour_type == "cont"){
     list(
-      viridis::scale_colour_viridis(discrete = FALSE, na.value="grey"),
+      viridis::scale_color_viridis(discrete = FALSE, na.value="grey"),
       viridis::scale_fill_viridis(discrete = FALSE, guide = FALSE, na.value="grey")
     )
   } else if(colour_type == "ordinal"){
     list(
-      viridis::scale_colour_viridis(discrete = TRUE, na.value="grey"),
-      viridis::scale_fill_viridis(discrete = TRUE, guide = FALSE, na.value="grey")
+      viridis::scale_color_viridis(discrete = TRUE, option="D", na.value="grey"),
+      viridis::scale_fill_viridis(discrete = TRUE, guide = FALSE, option="D", na.value="grey")
+    )
+  } else if(colour_type == "ordinal5"){
+    list(
+      scale_color_manual(discrete = TRUE, values=viridisLite::viridis(n=5), na.value="grey"),
+      scale_fill_manual(discrete = TRUE, guide = FALSE, values=viridisLite::viridis(n=5), na.value="grey")
     )
   } else
     stop("colour_type '", colour_type, "' not supported -- must be 'qual', 'cont', or 'ordinal'")
@@ -184,7 +189,7 @@ metadata_variables <- tribble(
   "sex", "Sex", "qual",
   "ageband", "Age", "ordinal",
   "ethnicity","Ethnicity", "qual",
-  "imd", "IMD", "ordinal",
+  "imd", "IMD", "ordinal5",
   "region", "Region", "qual"
 )
 
