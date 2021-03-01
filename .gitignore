@@ -5,3 +5,25 @@ __pycache__
 .python-version
 output/*
 metadata/*
+.idea/
+
+# jupyter
+
+.ipynb_checkpoints
+
+.ipython/
+
+.jupyter/
+
+.local/
+.env
+
+#Rstudio
+
+.Rproj.user
+*.Rproj
+
+#VSCode
+*.vscode
+
+sandbox/*
