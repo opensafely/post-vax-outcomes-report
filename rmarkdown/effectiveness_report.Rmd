@@ -332,3 +332,435 @@ print_event_rates("region", "Region")
 &nbsp;
 
 ![](../released_outputs/output/tte/figures/plot_patch_region.svg "outcomes by Region"){width="80%"}
+
+
+### Body Mass Index
+
+```{r region_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("bmi", "Body Mass Index")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r region_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("bmi", "BMI")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_region.svg "outcomes by BMI"){width="80%"}
+
+
+### Body Mass Index
+
+```{r bmi_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("bmi", "Body Mass Index")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r bmi_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("bmi", "BMI")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_bmi.svg "outcomes by BMI"){width="80%"}
+
+
+
+
+
+### Chronic cardiac disease
+
+```{r ccd_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("chronic_cardiac_disease", "Chronic cardiac disease")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r ccd_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("chronic_cardiac_disease", "Chronic cardiac disease")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_chronic_cardiac_disease.svg "outcomes by chronic cardiac disease"){width="80%"}
+
+
+
+### Current COPD
+
+```{r copd_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("current_copd", "COPD")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r copd_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("current_copd", "COPD")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_current_copd.svg "outcomes by COPD"){width="80%"}
+
+### DMARDs
+
+```{r dmards_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("dmards", "DMARDs")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r dmards_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("dmards", "DMARDs")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_dmards.svg "outcomes by DMARDs"){width="80%"}
+
+
+
+
+
+### Dialysis
+
+```{r dialysis_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("dialysis", "Dialysis")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r dialysis_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("dialysis", "Dialysis")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_dialysis.svg "outcomes by Dialysis"){width="80%"}
+
+
+
+### Solid organ transplantation
+
+```{r solid_organ_transplantation_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("solid_organ_transplantation", "Solid organ transplantation")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r solid_organ_transplantation_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("solid_organ_transplantation", "Solid organ transplantation")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_solid_organ_transplantation.svg "outcomes by Solid organ transplantation"){width="80%"}
+
+
+
+### Chemo or radio-therapy
+
+```{r chemo_or_radio_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("chemo_or_radio", "Chemo or radio-therapy")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r chemo_or_radio_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("chemo_or_radio", "Chemo or radio-therapy")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_chemo_or_radio.svg "outcomes by Chemo or radio-therapy"){width="80%"}
+
+
+### Intellectual disability, incl. Down's
+
+```{r intel_dis_incl_downs_syndrome_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("intel_dis_incl_downs_syndrome", "Intellectual disability, incl. Down's")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r intel_dis_incl_downs_syndrome_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("intel_dis_incl_downs_syndrome", "Intellectual disability, incl. Down's")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_intel_dis_incl_downs_syndrome.svg "outcomes by Intellectual disability, incl. Down's"){width="80%"}
+
+
+
+### Lung cancer
+
+```{r lung_cancer_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("lung_cancer", "Lung cancer")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r lung_cancer_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("lung_cancer", "Lung cancer")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_lung_cancer.svg "outcomes by Lung cancer"){width="80%"}
+
+
+
+### Haematological cancer
+
+```{r haematological_cancer_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("haematological_cancer", "Haematological cancer")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r haematological_cancer_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("haematological_cancer", "Haematological cancer")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_haematological_cancer.svg "outcomes by Haematological cancer"){width="80%"}
+
+
+
+### Cancer, excluding lung and haematological cancer
+
+```{r cancer_excl_lung_and_haem_cancer_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("cancer_excl_lung_and_haem", "Cancer")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r cancer_excl_lung_and_haem_cancer_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("cancer_excl_lung_and_haem", "Cancer")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_cancer_excl_lung_and_haem.svg "outcomes by Cancer, excluding lung and haematological cancer"){width="80%"}
+
+
+
+
+
+
+### Bone marrow transplant
+
+```{r bone_marrow_transplant_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("bone_marrow_transplant", "Bone marrow transplant")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r bone_marrow_transplant_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("bone_marrow_transplant", "Bone marrow transplant")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_bone_marrow_transplant.svg "outcomes by Bone marrow transplant"){width="80%"}
+
+
+
+
+### Cystic fibrosis
+
+```{r cystic_fibrosis_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("cystic_fibrosis", "Cystic fibrosis")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r cystic_fibrosis_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("cystic_fibrosis", "Cystic fibrosis")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_cystic_fibrosis.svg "outcomes by Cystic fibrosis"){width="80%"}
+
+
+
+
+
+### Sickle cell disease
+
+```{r sickle_cell_disease_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("sickle_cell_disease", "Sickle cell disease")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r sickle_cell_disease_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("sickle_cell_disease", "Sickle cell disease")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_sickle_cell_disease.svg "outcomes by Sickle cell disease"){width="80%"}
+
+
+
+
+### Permanent immunosuppression
+
+```{r permanant_immunosuppression_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("permanant_immunosuppression", "Permanent immunosuppression")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r permanant_immunosuppression_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("permanant_immunosuppression", "Permanent immunosuppression")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_permanant_immunosuppression.svg "outcomes by Permanent immunosuppression"){width="80%"}
+
+
+### Temporary immunosuppression
+
+```{r temporary_immunosuppression_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("temporary_immunosuppression", "Temporary immunosuppression")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r temporary_immunosuppression_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("temporary_immunosuppression", "Temporary immunosuppression")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_temporary_immunosuppression.svg "outcomes by Temporary immunosuppression"){width="80%"}
+
+
+
+
+### Psychosis, Schizophrenia
+
+```{r psychosis_schiz_bipolar_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("psychosis_schiz_bipolar", "Psychosis, Schizophrenia")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r psychosis_schiz_bipolar_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("psychosis_schiz_bipolar", "Psychosis, Schizophrenia")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_psychosis_schiz_bipolar.svg "outcomes by psychosis_schiz_bipolar"){width="80%"}
+
+
+
+
+### Asplenia
+
+```{r asplenia_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("asplenia", "Asplenia")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r asplenia_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("asplenia", "Asplenia")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_asplenia.svg "outcomes by Asplenia"){width="80%"}
+
+
+
+
+### Dementia
+
+```{r dementia_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("dementia", "Dementia")
+```
+
+&nbsp;
+&nbsp;
+
+
+```{r dementia_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("dementia", "Dementia")
+```
+
+&nbsp;
+&nbsp;
+
+![](../released_outputs/output/tte/figures/plot_patch_dementia.svg "outcomes by Dementia"){width="80%"}
+
+
+
+

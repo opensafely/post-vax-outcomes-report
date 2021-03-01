@@ -100,8 +100,8 @@ get_colour_scales <- function(colour_type = "qual"){
     )
   } else if(colour_type == "ordinal5"){
     list(
-      scale_color_manual(discrete = TRUE, values=viridisLite::viridis(n=5), na.value="grey"),
-      scale_fill_manual(discrete = TRUE, guide = FALSE, values=viridisLite::viridis(n=5), na.value="grey")
+      scale_color_manual(values=viridisLite::viridis(n=5), na.value="grey"),
+      scale_fill_manual(guide = FALSE, values=viridisLite::viridis(n=5), na.value="grey")
     )
   } else
     stop("colour_type '", colour_type, "' not supported -- must be 'qual', 'cont', or 'ordinal'")
@@ -187,10 +187,30 @@ ggplot_hazard <- function(.surv_data, colour_var, colour_name, colour_type="qual
 metadata_variables <- tribble(
   ~variable, ~variable_name, ~colour_type,
   "sex", "Sex", "qual",
-  "ageband", "Age", "ordinal",
+  "ageband", "Age", "qual",
   "ethnicity","Ethnicity", "qual",
   "imd", "IMD", "ordinal5",
-  "region", "Region", "qual"
+  "region", "Region", "qual",
+
+  "bmi", "Body Mass Index", "ordinal",
+  "chronic_cardiac_disease", "Chronic cardiac disease", "qual",
+   "current_copd", "Current COPD", "qual",
+   "dmards", "DMARDs",  "qual",
+   "dialysis", "Dialysis", "qual",
+   "solid_organ_transplantation", "Solid organ transplant", "qual",
+   "chemo_or_radio", "Chemo or radio-therapy", "qual",
+   "intel_dis_incl_downs_syndrome", "Intellectual disability, incl. Down's", "qual",
+   "lung_cancer", "Lung cancer", "qual",
+   "cancer_excl_lung_and_haem", "Other cancer", "qual",
+   "haematological_cancer", "haematological cancer", "qual",
+   "bone_marrow_transplant", "Bone marrow transplant", "qual",
+   "cystic_fibrosis", "Cystic fibrosis", "qual",
+   "sickle_cell_disease", "Sickle cell disease", "qual",
+   "permanant_immunosuppression", "Permanent immunosuppression", "qual",
+   "temporary_immunosuppression", "Temporary immunosuppression", "qual",
+   "psychosis_schiz_bipolar", "Psychosis, Schizophrenia", "qual",
+   "asplenia", "Asplenia", "qual",
+   "dementia", "Dementia", "qual",
 )
 
 
@@ -249,6 +269,8 @@ dir.create(here::here("output", "tte", "figures"), showWarnings = FALSE, recursi
 # save individual plots
 plot_combinations %>%
   transmute(
+    variable,
+    outcome,
     plot=plot_surv,
     units = "cm",
     height = 10,
@@ -257,7 +279,10 @@ plot_combinations %>%
     filename = str_c("plot_survival_", variable, "_", outcome, ".svg"),
     path = here::here("output", "tte", "figures"),
   ) %>%
-  pwalk(ggsave)
+  pwalk(function(variable, outcome, plot, units, height, width, limitsize, filename, path){
+    cat(variable, "  ", outcome, "  \n")
+    ggsave(plot=plot, units=units, height=height, width=width, limitsize=limitsize, filename=filename, path=path)
+  })
 
 plot_combinations %>%
   transmute(
