@@ -82,7 +82,7 @@ print_event_rates <- function(variable,  variable_name){
 
   table <- read_csv(
     file.path(output_dir, "tte", "tables", paste0("event_rates_at_14days_", variable, ".csv")),
-    col_types = "fiidididididid",
+    col_types = "fiididididid",
     na="-"
   )
   names(table)[1] <- variable_name
