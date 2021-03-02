@@ -51,7 +51,7 @@ survobj <- function(.data, time, indicator, group_vars){
           data = .x,
           scale="hazard",
           timescale="log",
-          k=4
+          k=3
         )
       }),
       flexsurv_obj_tidy = map(flexsurv_obj, ~{
@@ -63,7 +63,16 @@ survobj <- function(.data, time, indicator, group_vars){
             smooth_cml.haz=0, smooth_cml.haz.ll=0, smooth_cml.haz.ul=0
           )
         } else {
-          tidy_flexsurvspline(.x, times=unique_times)
+          tidy_possflex <- possibly(
+            tidy_flexsurvspline,
+            tibble(
+              time=0,
+              smooth_surv=1, smooth_surv.ll=1, smooth_surv.ul=1,
+              smooth_haz=0, smooth_haz.ll=0, smooth_haz.ul=0,
+              smooth_cml.haz=0, smooth_cml.haz.ll=0, smooth_cml.haz.ul=0
+            )
+          )
+          tidy_possflex(.x, times=unique_times)
         }
       }),
       merged = map2(surv_obj_tidy, flexsurv_obj_tidy, ~full_join(.x, .y, by="time"))
@@ -387,7 +396,7 @@ plot_combinations %>%
 
 # patch event rate and hazard rate plots together by variable and save
 plot_combinations %>%
-  filter(outcome != "seconddose") %>%
+  #filter(outcome != "seconddose") %>%
   group_by(variable, variable_name) %>%
   arrange(factor(outcome, levels=c("posSGSS", "posPC", "admitted", "coviddeath", "death"))) %>%
   summarise(
