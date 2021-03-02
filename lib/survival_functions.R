@@ -151,7 +151,11 @@ tidy_flexsurvspline <- function(
   summaryfs_cmlhazard <- summary(flexsurvsplinefit, type="cumhaz", t=times, tidy=TRUE)
   names(summaryfs_cmlhazard)[1:4] <- c("time", "smooth_cml.haz", "smooth_cml.haz.ll", "smooth_cml.haz.ul")
 
-  output <- bind_cols(summaryfs_survival, summaryfs_hazard[,c(2,3,4)], summaryfs_cmlhazard[,c(2,3,4)])
+  output <- bind_cols(
+    summaryfs_survival,
+    summaryfs_hazard[,c(2,3,4)],
+    summaryfs_cmlhazard[,c(2,3,4)]
+  )
 
   return(output)
 
