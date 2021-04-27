@@ -37,7 +37,6 @@ actions:
         summary2: output/variable_summary/numeric.txt
         summary3: output/variable_summary/date.txt
         summarytables: output/variable_summary/tables/categorical_*.csv
-        summarystats: output/summary_stats.json
 
   vaccine_tables:
     run: r:latest analysis/R/vaccine_type.R
@@ -57,5 +56,15 @@ actions:
     run: r:latest analysis/R/tte_plots.R
     needs: [data_process_vaccinated]
     outputs:
+  #    highly_sensitive:
+  #      rds: output/tte/figures/plot_*.rds
       moderately_sensitive:
-        plots: output/tte/figures/plot_*.svg
+        svg: output/tte/figures/plot_*.svg
+
+
+  run_markdown:
+    run: r:latest -e 'rmarkdown::render("rmarkdown/effectiveness_report.Rmd", knit_root_dir = "/workspace", output_dir="/workspace/output")'
+    needs: [data_process_vaccinated, vaccine_tables, tte_tables, tte_plots]
+    outputs:
+      moderately_sensitive:
+        html: output/effectiveness_report.html

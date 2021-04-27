@@ -31,7 +31,7 @@ print()
 
 data_extract0 <- read_csv(
   here::here("output", "input_vaccinated.csv"),
-  col_types = cols(
+  col_types = cols_only(
 
     # identifiers
     patient_id = col_integer(),
@@ -44,16 +44,12 @@ data_extract0 <- read_csv(
     care_home_type = col_character(),
     care_home = col_logical(),
 
-
-    registered = col_logical(),
-    registered_at_latest_date = col_logical(),
     has_follow_up_previous_year = col_logical(),
-    has_died = col_logical(),
 
     age = col_integer(),
     sex = col_character(),
     ethnicity = col_character(),
-    ethnicity_16 = col_character(),
+#    ethnicity_16 = col_character(),
 
 
     # clinical
@@ -81,23 +77,33 @@ data_extract0 <- read_csv(
 
     # dates
 
-    first_SGSS_positive_test_date = col_date(format="%Y-%m-%d"),
-    earliest_primary_care_covid_case_date = col_date(format="%Y-%m-%d"),
+    prior_positive_test_date = col_date(format="%Y-%m-%d"),
+    prior_primary_care_covid_case_date = col_date(format="%Y-%m-%d"),
 
-    covid_vacc_date = col_date(format="%Y-%m-%d"),
-    covid_vacc_second_dose_date = col_date(format="%Y-%m-%d"),
+    covid_vax_1_date = col_date(format="%Y-%m-%d"),
+    covid_vax_2_date = col_date(format="%Y-%m-%d"),
+    covid_vax_3_date = col_date(format="%Y-%m-%d"),
+    covid_vax_4_date = col_date(format="%Y-%m-%d"),
 
-    covid_vacc_pfizer_first_dose_date = col_date(format="%Y-%m-%d"),
-    covid_vacc_pfizer_second_dose_date = col_date(format="%Y-%m-%d"),
-    covid_vacc_pfizer_third_dose_date = col_date(format="%Y-%m-%d"),
+    covid_vax_pfizer_1_date = col_date(format="%Y-%m-%d"),
+    covid_vax_pfizer_2_date = col_date(format="%Y-%m-%d"),
+    covid_vax_pfizer_3_date = col_date(format="%Y-%m-%d"),
+    covid_vax_pfizer_4_date = col_date(format="%Y-%m-%d"),
 
-    covid_vacc_oxford_first_dose_date = col_date(format="%Y-%m-%d"),
-    covid_vacc_oxford_second_dose_date = col_date(format="%Y-%m-%d"),
-    covid_vacc_oxford_third_dose_date = col_date(format="%Y-%m-%d"),
+    covid_vax_az_1_date = col_date(format="%Y-%m-%d"),
+    covid_vax_az_2_date = col_date(format="%Y-%m-%d"),
+    covid_vax_az_3_date = col_date(format="%Y-%m-%d"),
+    covid_vax_az_4_date = col_date(format="%Y-%m-%d"),
 
-    post_vaccine_SGSS_positive_test_date = col_date(format="%Y-%m-%d"),
-    post_vaccine_primary_care_covid_case_date = col_date(format="%Y-%m-%d"),
-    post_vaccine_admitted_date = col_date(format="%Y-%m-%d"),
+    positive_test_1_date = col_date(format="%Y-%m-%d"),
+    positive_test_2_date = col_date(format="%Y-%m-%d"),
+
+    primary_care_covid_case_1_date = col_date(format="%Y-%m-%d"),
+    primary_care_covid_case_2_date = col_date(format="%Y-%m-%d"),
+
+    covidadmitted_1_date = col_date(format="%Y-%m-%d"),
+    covidadmitted_2_date = col_date(format="%Y-%m-%d"),
+
     coviddeath_date = col_date(format="%Y-%m-%d"),
     death_date = col_date(format="%Y-%m-%d")
   ),
@@ -154,14 +160,34 @@ data_vaccinated <- data_extract %>%
 
     imd = na_if(imd, "0"),
     imd = fct_case_when(
-      imd == 1 ~ "1 least deprived",
+      imd == 1 ~ "1 most deprived",
       imd == 2 ~ "2",
       imd == 3 ~ "3",
       imd == 4 ~ "4",
-      imd == 5 ~ "5 most deprived",
+      imd == 5 ~ "5 least deprived",
       #TRUE ~ "Unknown",
       TRUE ~ NA_character_
     ),
+
+    region = factor(region,
+                    levels= c(
+                      "East",
+                      "East Midlands",
+                      "London",
+                      "North East",
+                      "North West",
+                      "South East",
+                      "South West",
+                      "West Midlands",
+                      "Yorkshire and The Humber"
+                    )
+    ),
+
+    stp = as.factor(stp),
+
+    bmi = as.factor(bmi),
+
+    noncoviddeath_date = if_else(!is.na(death_date) & is.na(coviddeath_date), death_date, as.Date(NA_character_)),
 
     cause_of_death = fct_case_when(
       !is.na(coviddeath_date) ~ "covid-related",
@@ -171,27 +197,34 @@ data_vaccinated <- data_extract %>%
 
     covid_vax_1_type = fct_case_when(
       !is.na(covid_vax_az_1_date) & is.na(covid_vax_pfizer_1_date) ~ "Ox-AZ",
-      is.na(covid_vax_az_1_date) & !is.na(covid_vax_pfizer_1_date) ~ "P-B",
+      is.na(covid_vax_az_1_date) & !is.na(covid_vax_pfizer_1_date) ~ "P-BNT",
       !is.na(covid_vax_1_date) ~ "Unknown",
       TRUE ~ "Not vaccinated"
     ),
 
-
+    infection_before_vax = fct_case_when(
+      (covid_vax_1_date < prior_positive_test_date) |
+        (covid_vax_1_date < positive_test_1_date) |
+        !is.na(positive_test_1_date) ~ "no",
+      TRUE  ~ "yes"
+    ),
 
     tte_end = tte(covid_vax_1_date, end_date, end_date),
 
     tte_seconddose = tte(covid_vax_1_date, covid_vax_2_date, censor_date),
-    tte_posSGSS = tte(covid_vax_1_date, positive_test_1_date, censor_date),
+    tte_postest = tte(covid_vax_1_date, positive_test_1_date, censor_date),
     tte_posPC = tte(covid_vax_1_date, primary_care_covid_case_1_date, censor_date),
     tte_admitted = tte(covid_vax_1_date, covidadmitted_1_date, censor_date),
     tte_coviddeath = tte(covid_vax_1_date, coviddeath_date, censor_date),
+    tte_noncoviddeath = tte(covid_vax_1_date, noncoviddeath_date, censor_date),
     tte_death = tte(covid_vax_1_date, death_date, censor_date),
 
     ind_seconddose = censor_indicator(covid_vax_2_date, censor_date),
-    ind_posSGSS = censor_indicator(positive_test_1_date, censor_date),
+    ind_postest = censor_indicator(positive_test_1_date, censor_date),
     ind_posPC = censor_indicator(primary_care_covid_case_1_date, censor_date),
     ind_admitted = censor_indicator(covidadmitted_1_date, censor_date),
     ind_coviddeath = censor_indicator(coviddeath_date, censor_date),
+    ind_noncoviddeath = censor_indicator(noncoviddeath_date, censor_date),
     ind_death = censor_indicator(death_date, censor_date),
 
   ) %>%
@@ -244,7 +277,7 @@ data_vax_dates <- local({
     mutate(
       vaccine_type = fct_case_when(
         !is.na(vax_az_index) & is.na(vax_pf_index) ~ "Ox-AZ",
-        is.na(vax_az_index) & !is.na(vax_pf_index) ~ "Pf-BN",
+        is.na(vax_az_index) & !is.na(vax_pf_index) ~ "P-BNT",
         is.na(vax_az_index) & is.na(vax_pf_index) ~ "Unknown",
         !is.na(vax_az_index) & !is.na(vax_pf_index) ~ "Both",
         TRUE ~ NA_character_
