@@ -51,9 +51,10 @@ eventrate_table_all <- function(data, variable, days=14L){
     total_followup,
     #eventrate_table_1(data, "seconddose", variable, days),
     eventrate_table_1(data, "posPC", variable, days),
-    eventrate_table_1(data, "posSGSS", variable, days),
+    eventrate_table_1(data, "postest", variable, days),
     eventrate_table_1(data, "admitted", variable, days),
     eventrate_table_1(data, "coviddeath", variable, days),
+    eventrate_table_1(data, "noncoviddeath", variable, days),
     eventrate_table_1(data, "death", variable, days)
   ) %>%
   reduce(full_join, by=variable)
@@ -68,24 +69,25 @@ dir.create(here::here("output", "tte", "tables"), showWarnings = FALSE, recursiv
 c(
   "sex", "ageband", "imd", "ethnicity", "region",
   "bmi",
-  "chronic_cardiac_disease",
-  "current_copd",
-  "dmards",
-  "dialysis",
-  "solid_organ_transplantation",
-  "chemo_or_radio",
-  "intel_dis_incl_downs_syndrome",
-  "lung_cancer",
-  "cancer_excl_lung_and_haem",
-  "haematological_cancer",
-  "bone_marrow_transplant",
-  "cystic_fibrosis",
-  "sickle_cell_disease",
-  "permanant_immunosuppression",
-  "temporary_immunosuppression",
-  "psychosis_schiz_bipolar",
-  "asplenia",
-  "dementia"
+  "infection_before_vax"
+  # "chronic_cardiac_disease",
+  # "current_copd",
+  # "dmards",
+  # "dialysis",
+  # "solid_organ_transplantation",
+  # "chemo_or_radio",
+  # "intel_dis_incl_downs_syndrome",
+  # "lung_cancer",
+  # "cancer_excl_lung_and_haem",
+  # "haematological_cancer",
+  # "bone_marrow_transplant",
+  # "cystic_fibrosis",
+  # "sickle_cell_disease",
+  # "permanant_immunosuppression",
+  # "temporary_immunosuppression",
+  # "psychosis_schiz_bipolar",
+  # "asplenia",
+  # "dementia"
   ) %>%
   set_names(.) %>%
   map(~{eventrate_table_all(data_vaccinated, ., 14L)}) %>%

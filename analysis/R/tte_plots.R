@@ -13,7 +13,7 @@ data_vaccinated <- read_rds(
 
 source(here::here("lib", "survival_functions.R"))
 
-# time to readmission or death ##################
+# time to event ##################
 
 survobj <- function(.data, time, indicator, group_vars){
 
@@ -131,12 +131,12 @@ ggplot_surv <- function(.surv_data, colour_var, colour_name, colour_type="qual",
   }
 
   surv_plot <- .surv_data %>%
-  filter(time<=30) %>%
+  filter(time<=90) %>%
   ggplot(aes_string(group=colour_var, colour=colour_var, fill=colour_var)) +
   lines+
   get_colour_scales(colour_type)+
   scale_y_continuous(expand = expansion(mult=c(0,0.01)))+
-  coord_cartesian(xlim=c(0, 30))+
+  coord_cartesian(xlim=c(0, 90))+
   labs(
     x="Days",
     y="Cumul. event rate",
@@ -171,12 +171,12 @@ ggplot_hazard <- function(.surv_data, colour_var, colour_name, colour_type="qual
 
 
   surv_plot <- .surv_data %>%
-    filter(time<=30) %>%
+    filter(time<=90) %>%
     ggplot(aes_string(group=colour_var, colour=colour_var, fill=colour_var)) +
     lines+
     get_colour_scales(colour_type)+
     scale_y_continuous(expand = expansion(mult=c(0,0.01)))+
-    coord_cartesian(xlim=c(0, 30))+
+    coord_cartesian(xlim=c(0, 90))+
     labs(
       x="Days",
       y="Inst. hazard rate",
@@ -202,32 +202,33 @@ metadata_variables <- tribble(
   "region", "Region", "qual",
 
   "bmi", "Body Mass Index", "ordinal",
-  "chronic_cardiac_disease", "Chronic cardiac disease", "qual",
-   "current_copd", "Current COPD", "qual",
-   "dmards", "DMARDs",  "qual",
-   "dialysis", "Dialysis", "qual",
-   "solid_organ_transplantation", "Solid organ transplant", "qual",
-   "chemo_or_radio", "Chemo or radio-therapy", "qual",
-   "intel_dis_incl_downs_syndrome", "Intellectual disability, incl. Down's", "qual",
-   "lung_cancer", "Lung cancer", "qual",
-   "cancer_excl_lung_and_haem", "Other cancer", "qual",
-   "haematological_cancer", "haematological cancer", "qual",
-   "bone_marrow_transplant", "Bone marrow transplant", "qual",
-   "cystic_fibrosis", "Cystic fibrosis", "qual",
-   "sickle_cell_disease", "Sickle cell disease", "qual",
-   "permanant_immunosuppression", "Permanent immunosuppression", "qual",
-   "temporary_immunosuppression", "Temporary immunosuppression", "qual",
-   "psychosis_schiz_bipolar", "Psychosis, Schizophrenia", "qual",
-   "asplenia", "Asplenia", "qual",
-   "dementia", "Dementia", "qual",
+  "infection_before_vax", "Prior infection", "qual",
+  # "chronic_cardiac_disease", "Chronic cardiac disease", "qual",
+  #  "current_copd", "Current COPD", "qual",
+  #  "dmards", "DMARDs",  "qual",
+  #  "dialysis", "Dialysis", "qual",
+  #  "solid_organ_transplantation", "Solid organ transplant", "qual",
+  #  "chemo_or_radio", "Chemo or radio-therapy", "qual",
+  #  "intel_dis_incl_downs_syndrome", "Intellectual disability, incl. Down's", "qual",
+  #  "lung_cancer", "Lung cancer", "qual",
+  #  "cancer_excl_lung_and_haem", "Other cancer", "qual",
+  #  "haematological_cancer", "haematological cancer", "qual",
+  #  "bone_marrow_transplant", "Bone marrow transplant", "qual",
+  #  "cystic_fibrosis", "Cystic fibrosis", "qual",
+  #  "sickle_cell_disease", "Sickle cell disease", "qual",
+  #  "permanant_immunosuppression", "Permanent immunosuppression", "qual",
+  #  "temporary_immunosuppression", "Temporary immunosuppression", "qual",
+  #  "psychosis_schiz_bipolar", "Psychosis, Schizophrenia", "qual",
+  #  "asplenia", "Asplenia", "qual",
+  #  "dementia", "Dementia", "qual",
 )
 
 
 metadata_outcomes <- tribble(
   ~outcome, ~outcome_name,
-  "seconddose", "Second dose",
-  "posSGSS",   "Positive test",
-  "posPC",     "Primary care case",
+  #"seconddose", "Second dose",
+  "postest",   "Positive test (SGSS)",
+  "posPC",     "Positive test (GP)",
   "admitted",  "Covid-related admission",
   "coviddeath","Covid-related death",
   "death",     "All-cause death"
@@ -236,9 +237,9 @@ metadata_outcomes <- tribble(
 metadata_crossed <- crossing(metadata_variables, metadata_outcomes)
 
 # test_data <- data_vaccinated %>%
-#  filter(age<=18, tte_posSGSS>0) %>%
-#  select(tte_posSGSS, ind_posSGSS, ethnicity)
-# test_surv <- survobj(test_data, "tte_posSGSS", "ind_posSGSS", "ethnicity")
+#  filter(age<=18, tte_postest>0) %>%
+#  select(tte_postest, ind_postest, ethnicity)
+# test_surv <- survobj(test_data, "tte_postest", "ind_postest", "ethnicity")
 #
 # ggplot_surv(test_surv, "ethnicity", "ethnicity", "qual", FALSE, TRUE)
 
@@ -346,7 +347,7 @@ plot_combinations %>%
 # plot_combinations %>%
 #   filter(outcome != "seconddose") %>%
 #   group_by(variable, variable_name) %>%
-#   arrange(factor(outcome, levels=c("posSGSS", "posPC", "coviddeath", "death"))) %>%
+#   arrange(factor(outcome, levels=c("postest", "posPC", "coviddeath", "death"))) %>%
 #   summarise(patch_plot = list(plot_surv)) %>%
 #   mutate(
 #     patch_plot = map(
@@ -372,7 +373,7 @@ plot_combinations %>%
 # plot_combinations %>%
 #   filter(outcome != "seconddose") %>%
 #   group_by(variable, variable_name) %>%
-#   arrange(factor(outcome, levels=c("posSGSS", "posPC", "coviddeath", "death"))) %>%
+#   arrange(factor(outcome, levels=c("postest", "posPC", "coviddeath", "death"))) %>%
 #   summarise(patch_plot = list(plot_hazard)) %>%
 #   mutate(
 #     patch_plot = map(
@@ -398,7 +399,7 @@ plot_combinations %>%
 plot_combinations %>%
   #filter(outcome != "seconddose") %>%
   group_by(variable, variable_name) %>%
-  arrange(factor(outcome, levels=c("posSGSS", "posPC", "admitted", "coviddeath", "death"))) %>%
+  arrange(factor(outcome, levels=c("postest", "posPC", "admitted", "coviddeath", "noncoviddeath", "death"))) %>%
   summarise(
     patch_plot = list(c(plot_surv, plot_smoothhazard))
   ) %>%

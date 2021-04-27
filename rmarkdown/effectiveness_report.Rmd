@@ -1,12 +1,12 @@
 ---
 title: "Vaccine effectiveness report"
 output:
-  md_document:
-    variant: gfm
   html_document:
     code_folding: hide
     keep_md: yes
   pdf_document: default
+  md_document:
+    variant: gfm
 ---
 
 ```{r setup, include=FALSE}
@@ -20,14 +20,22 @@ library('patchwork')
 
 source(here::here("lib", "html_output_functions.R"))
 
-output_dir <- here::here("released_outputs/output") # change this when running on real data
+output_dir <- here::here("output") 
 
-gbl_vars <- jsonlite::fromJSON(txt=file.path(output_dir, "summary_stats.json"))
-summary_stats <- jsonlite::fromJSON(txt=file.path(output_dir, "summary_stats.json"))
 
-run_date =date(file.info(here::here("metadata","extract_vaccinated.log"))$ctime)
-#run_date <- summary_stats$run_date
-end_date <- summary_stats$end_date
+vars_list <- jsonlite::fromJSON(txt=here::here("lib", "global-variables.json"))
+
+data_vaccinated <- read_rds(here::here("output", "data", "data_vaccinated.rds"))
+
+summary_stats <- append(
+  vars_list,
+  list(
+    run_date =date(file.info(here::here("metadata","extract_vaccinated.log"))$ctime),
+    total_vaccinated = sum(!is.na(data_vaccinated$covid_vax_1_date)),
+    total_vaccinated_az = sum(data_vaccinated$covid_vax_1_type=="Ox-AZ", na.rm=TRUE),
+    total_vaccinated_pfizer = sum(data_vaccinated$covid_vax_1_type=="P-BNT", na.rm=TRUE)
+  )
+)
 
 pct <- scales::label_percent(accuracy=0.1)
 
@@ -71,7 +79,7 @@ Measured outcomes include:
 
 The code and data for this report can be found at the [covid-vaccine-effectiveness-research GitHub repository](https://github.com/opensafely/covid-vaccine-effectiveness-research). 
 
-The dataset used for this report was created using the study definition `/analysis/study_definition.py`, using codelists referenced in `/codelists/codelists.txt`. It was extracted from the OpenSAFELY-TPP data extracted on `r run_date`, with event dates censored on (occurring no later than) `r gbl_vars$end_date`.
+The dataset used for this report was created using the study definition `/analysis/study_definition.py`, using codelists referenced in `/codelists/codelists.txt`. It was extracted from the OpenSAFELY-TPP data extracted on `r summary_stats$run_date`, with event dates censored on (occurring no later than) `r summary_stats$end_date`.
 
 To minimise data disclosivity in frequency tables, counts are rounded to the nearest 7 and percentages are derived from these rounded counts.
 
@@ -82,7 +90,7 @@ print_event_rates <- function(variable,  variable_name){
 
   table <- read_csv(
     file.path(output_dir, "tte", "tables", paste0("event_rates_at_14days_", variable, ".csv")),
-    col_types = "fiididididid",
+    col_types = "fiidididididid",
     na="-"
   )
   names(table)[1] <- variable_name
@@ -90,9 +98,10 @@ print_event_rates <- function(variable,  variable_name){
   renamer <-
   c(
     `^posPC_` = "primary care case_", 
-    `^posSGSS_` = "positive test_",
+    `^postest_` = "positive test_",
     `^admitted_` = "covid-related admission_",
     `^coviddeath_` = "covid-related death_",
+    `^noncoviddeath_` = "non-covid-related death_",
     `^death_` = "all-cause death_"
   )
   
@@ -121,7 +130,7 @@ print_event_rates <- function(variable,  variable_name){
      "Numbers are rounded to the nearest 7"
     )
 
-  gt_table
+  return(gt_table)
 }
 
 
@@ -138,13 +147,15 @@ print_vaccinetype <- function(variable,  variable_name){
     na="-"
   )
   
-  gt_catcat(summary_catcat=table, 
+  tab <- gt_catcat(summary_catcat=table, 
             var1_name = variable_name, 
             var2_name = "vaccine type", 
             title="Vaccine type", 
             source_note = "- indicates redacted values",
             pct_decimal=1
             )
+  
+  return(tab)
 }
 ```
 
@@ -182,7 +193,7 @@ print_variable_freq <- function(variable, variable_name){
     bar_theme+
     NULL
   
-  print(plot)
+  return(plot)
   
 }
 
@@ -195,7 +206,7 @@ print_variable_freq <- function(variable, variable_name){
 print_variable_patch <- function(variable){
   
   knitr::include_graphics(
-    here::here(output_dir, "tte", "figures", paste0("plot_patch_",variable, ".svg"))
+    file.path(output_dir, "tte", "figures", paste0("plot_patch_",variable, ".svg"))
   )
 }
 
@@ -208,7 +219,7 @@ print_variable_patch <- function(variable){
 print_variable_haz <- function(variable){
   
   knitr::include_graphics(
-    here::here(output_dir, "tte", "figures", paste0("plot_patch_hazard_",variable, ".svg"))
+    file.path(output_dir, "tte", "figures", paste0("plot_patch_hazard_",variable, ".svg"))
   )
 }
 
@@ -216,7 +227,7 @@ print_variable_haz <- function(variable){
 
 ## Summary
 
-As of `r summary_stats$end_date`, there were `r summary_stats$total_vaccinated` TPP-registered patients who had received at least one vaccine dose. Of these, `r summary_stats$total_vaccinated_pfizer` received the Pfizer-BioNTech (P-B) vaccine and `r summary_stats$total_vaccinated_az` received the Oxford-AstraZenica (Ox-AZ) vaccine. Brand is unknown for the remaining `r summary_stats$total_vaccinated - summary_stats$total_vaccinated_az - summary_stats$total_vaccinated_pfizer` patients. 
+As of `r summary_stats$end_date`, there were `r summary_stats$total_vaccinated` TPP-registered patients who had received at least one vaccine dose. Of these, `r summary_stats$total_vaccinated_pfizer` received the Pfizer-BioNTech (P-B) vaccine and `r summary_stats$total_vaccinated_az` received the Oxford-AstraZenica (Ox-AZ) vaccine. Brand is unknown for the remaining `r summary_stats$total_vaccinated - summary_stats$total_vaccinated_az - summary_stats$total_vaccinated_pfizer` patients.
 
 ## Summaries by patient characteristics
 
@@ -245,7 +256,7 @@ print_event_rates("sex", "Sex")
 &nbsp;
 &nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_sex.svg "outcomes by Sex"){width="80%"}
+![](../output/tte/figures/plot_patch_sex.svg "outcomes by Sex"){width="80%"}
 
 
 
@@ -267,7 +278,7 @@ print_event_rates("ageband", "Age")
 &nbsp;
 &nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_ageband.svg "outcomes by Age"){width="80%"}
+![](../output/tte/figures/plot_patch_ageband.svg "outcomes by Age"){width="80%"}
 
 
 
@@ -289,7 +300,7 @@ print_event_rates("ethnicity", "Ethnicity")
 &nbsp;
 &nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_ethnicity.svg "outcomes by Ethnicity"){width="80%"}
+![](../output/tte/figures/plot_patch_ethnicity.svg "outcomes by Ethnicity"){width="80%"}
 
 
 ### Index of Multiple Deprivation (IMD)
@@ -310,7 +321,7 @@ print_event_rates("imd", "IMD")
 &nbsp;
 &nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_imd.svg "outcomes by IMD"){width="80%"}
+![](../output/tte/figures/plot_patch_imd.svg "outcomes by IMD"){width="80%"}
 
 
 
@@ -331,27 +342,7 @@ print_event_rates("region", "Region")
 &nbsp;
 &nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_region.svg "outcomes by Region"){width="80%"}
-
-
-### Body Mass Index
-
-```{r region_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("bmi", "Body Mass Index")
-```
-
-&nbsp;
-&nbsp;
-
-
-```{r region_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("bmi", "BMI")
-```
-
-&nbsp;
-&nbsp;
-
-![](../released_outputs/output/tte/figures/plot_patch_region.svg "outcomes by BMI"){width="80%"}
+![](../output/tte/figures/plot_patch_region.svg "outcomes by Region"){width="80%"}
 
 
 ### Body Mass Index
@@ -371,395 +362,446 @@ print_event_rates("bmi", "BMI")
 &nbsp;
 &nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_bmi.svg "outcomes by BMI"){width="80%"}
+![](../output/tte/figures/plot_patch_bmi.svg "outcomes by BMI"){width="80%"}
 
 
+### Prior infection
 
-
-
-### Chronic cardiac disease
-
-```{r ccd_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("chronic_cardiac_disease", "Chronic cardiac disease")
+```{r infection_before_vax_vacc, echo=FALSE, out.width='90%', results='asis'}
+print_vaccinetype("infection_before_vax", "Prior infection")
 ```
 
 &nbsp;
 &nbsp;
 
 
-```{r ccd_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("chronic_cardiac_disease", "Chronic cardiac disease")
+```{r infection_before_vax_tab, echo=FALSE, out.width='90%', results='asis'}
+print_event_rates("infection_before_vax", "Prior infection")
 ```
 
 &nbsp;
 &nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_chronic_cardiac_disease.svg "outcomes by chronic cardiac disease"){width="80%"}
+![](../output/tte/figures/plot_patch_infection_before_vax.svg "outcomes by prior infection"){width="80%"}
 
 
+<!-- ```{r loop, fig.width=6, echo=FALSE, message=FALSE, results='asis'} -->
 
-### Current COPD
+<!-- for(i in c("sex", "ageband")) { -->
+<!--   cat("  \n###",  i, "  \n") -->
 
-```{r copd_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("current_copd", "COPD")
-```
+<!--   cat("direct print here  \n") -->
+<!--   print(print_vaccinetype(i, i)) -->
 
-&nbsp;
-&nbsp;
+<!--   tab_vt <- print_vaccinetype(i, i) -->
+<!--   cat("print version here  \n") -->
+<!--   print(tab_vt) -->
 
+<!--   cat("non-print version here  \n") -->
+<!--   tab_vt -->
 
-```{r copd_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("current_copd", "COPD")
-```
+<!--   cat("  \n", "  \n") -->
 
-&nbsp;
-&nbsp;
+<!--   print(print_event_rates(i, i)) -->
 
-![](../released_outputs/output/tte/figures/plot_patch_current_copd.svg "outcomes by COPD"){width="80%"}
+<!--   cat("  \n", "  \n") -->
 
-### DMARDs
+<!--   print(print_variable_patch(i)) -->
 
-```{r dmards_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("dmards", "DMARDs")
-```
+<!--   cat("  \n", "  \n") -->
+<!-- } -->
+<!-- ``` -->
 
-&nbsp;
-&nbsp;
 
 
-```{r dmards_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("dmards", "DMARDs")
-```
 
-&nbsp;
-&nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_dmards.svg "outcomes by DMARDs"){width="80%"}
 
 
 
+<!-- ### Chronic cardiac disease -->
 
+<!-- ```{r ccd_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("chronic_cardiac_disease", "Chronic cardiac disease") -->
+<!-- ``` -->
 
-### Dialysis
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-```{r dialysis_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("dialysis", "Dialysis")
-```
 
-&nbsp;
-&nbsp;
+<!-- ```{r ccd_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("chronic_cardiac_disease", "Chronic cardiac disease") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-```{r dialysis_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("dialysis", "Dialysis")
-```
+<!-- ![](../output/tte/figures/plot_patch_chronic_cardiac_disease.svg "outcomes by chronic cardiac disease"){width="80%"} -->
 
-&nbsp;
-&nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_dialysis.svg "outcomes by Dialysis"){width="80%"}
 
+<!-- ### Current COPD -->
 
+<!-- ```{r copd_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("current_copd", "COPD") -->
+<!-- ``` -->
 
-### Solid organ transplantation
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-```{r solid_organ_transplantation_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("solid_organ_transplantation", "Solid organ transplantation")
-```
 
-&nbsp;
-&nbsp;
+<!-- ```{r copd_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("current_copd", "COPD") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-```{r solid_organ_transplantation_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("solid_organ_transplantation", "Solid organ transplantation")
-```
+<!-- ![](../output/tte/figures/plot_patch_current_copd.svg "outcomes by COPD"){width="80%"} -->
 
-&nbsp;
-&nbsp;
+<!-- ### DMARDs -->
 
-![](../released_outputs/output/tte/figures/plot_patch_solid_organ_transplantation.svg "outcomes by Solid organ transplantation"){width="80%"}
+<!-- ```{r dmards_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("dmards", "DMARDs") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
 
-### Chemo or radio-therapy
+<!-- ```{r dmards_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("dmards", "DMARDs") -->
+<!-- ``` -->
 
-```{r chemo_or_radio_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("chemo_or_radio", "Chemo or radio-therapy")
-```
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-&nbsp;
-&nbsp;
+<!-- ![](../output/tte/figures/plot_patch_dmards.svg "outcomes by DMARDs"){width="80%"} -->
 
 
-```{r chemo_or_radio_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("chemo_or_radio", "Chemo or radio-therapy")
-```
 
-&nbsp;
-&nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_chemo_or_radio.svg "outcomes by Chemo or radio-therapy"){width="80%"}
 
+<!-- ### Dialysis -->
 
-### Intellectual disability, incl. Down's
+<!-- ```{r dialysis_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("dialysis", "Dialysis") -->
+<!-- ``` -->
 
-```{r intel_dis_incl_downs_syndrome_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("intel_dis_incl_downs_syndrome", "Intellectual disability, incl. Down's")
-```
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-&nbsp;
-&nbsp;
 
+<!-- ```{r dialysis_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("dialysis", "Dialysis") -->
+<!-- ``` -->
 
-```{r intel_dis_incl_downs_syndrome_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("intel_dis_incl_downs_syndrome", "Intellectual disability, incl. Down's")
-```
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-&nbsp;
-&nbsp;
+<!-- ![](../output/tte/figures/plot_patch_dialysis.svg "outcomes by Dialysis"){width="80%"} -->
 
-![](../released_outputs/output/tte/figures/plot_patch_intel_dis_incl_downs_syndrome.svg "outcomes by Intellectual disability, incl. Down's"){width="80%"}
 
 
+<!-- ### Solid organ transplantation -->
 
-### Lung cancer
+<!-- ```{r solid_organ_transplantation_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("solid_organ_transplantation", "Solid organ transplantation") -->
+<!-- ``` -->
 
-```{r lung_cancer_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("lung_cancer", "Lung cancer")
-```
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-&nbsp;
-&nbsp;
 
+<!-- ```{r solid_organ_transplantation_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("solid_organ_transplantation", "Solid organ transplantation") -->
+<!-- ``` -->
 
-```{r lung_cancer_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("lung_cancer", "Lung cancer")
-```
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-&nbsp;
-&nbsp;
+<!-- ![](../output/tte/figures/plot_patch_solid_organ_transplantation.svg "outcomes by Solid organ transplantation"){width="80%"} -->
 
-![](../released_outputs/output/tte/figures/plot_patch_lung_cancer.svg "outcomes by Lung cancer"){width="80%"}
 
 
+<!-- ### Chemo or radio-therapy -->
 
-### Haematological cancer
+<!-- ```{r chemo_or_radio_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("chemo_or_radio", "Chemo or radio-therapy") -->
+<!-- ``` -->
 
-```{r haematological_cancer_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("haematological_cancer", "Haematological cancer")
-```
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-&nbsp;
-&nbsp;
 
+<!-- ```{r chemo_or_radio_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("chemo_or_radio", "Chemo or radio-therapy") -->
+<!-- ``` -->
 
-```{r haematological_cancer_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("haematological_cancer", "Haematological cancer")
-```
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-&nbsp;
-&nbsp;
+<!-- ![](../output/tte/figures/plot_patch_chemo_or_radio.svg "outcomes by Chemo or radio-therapy"){width="80%"} -->
 
-![](../released_outputs/output/tte/figures/plot_patch_haematological_cancer.svg "outcomes by Haematological cancer"){width="80%"}
 
+<!-- ### Intellectual disability, incl. Down's -->
 
+<!-- ```{r intel_dis_incl_downs_syndrome_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("intel_dis_incl_downs_syndrome", "Intellectual disability, incl. Down's") -->
+<!-- ``` -->
 
-### Cancer, excluding lung and haematological cancer
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-```{r cancer_excl_lung_and_haem_cancer_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("cancer_excl_lung_and_haem", "Cancer")
-```
 
-&nbsp;
-&nbsp;
+<!-- ```{r intel_dis_incl_downs_syndrome_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("intel_dis_incl_downs_syndrome", "Intellectual disability, incl. Down's") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-```{r cancer_excl_lung_and_haem_cancer_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("cancer_excl_lung_and_haem", "Cancer")
-```
+<!-- ![](../output/tte/figures/plot_patch_intel_dis_incl_downs_syndrome.svg "outcomes by Intellectual disability, incl. Down's"){width="80%"} -->
 
-&nbsp;
-&nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_cancer_excl_lung_and_haem.svg "outcomes by Cancer, excluding lung and haematological cancer"){width="80%"}
 
+<!-- ### Lung cancer -->
 
+<!-- ```{r lung_cancer_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("lung_cancer", "Lung cancer") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
 
+<!-- ```{r lung_cancer_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("lung_cancer", "Lung cancer") -->
+<!-- ``` -->
 
-### Bone marrow transplant
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-```{r bone_marrow_transplant_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("bone_marrow_transplant", "Bone marrow transplant")
-```
+<!-- ![](../output/tte/figures/plot_patch_lung_cancer.svg "outcomes by Lung cancer"){width="80%"} -->
 
-&nbsp;
-&nbsp;
 
 
-```{r bone_marrow_transplant_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("bone_marrow_transplant", "Bone marrow transplant")
-```
+<!-- ### Haematological cancer -->
 
-&nbsp;
-&nbsp;
+<!-- ```{r haematological_cancer_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("haematological_cancer", "Haematological cancer") -->
+<!-- ``` -->
 
-![](../released_outputs/output/tte/figures/plot_patch_bone_marrow_transplant.svg "outcomes by Bone marrow transplant"){width="80%"}
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
 
+<!-- ```{r haematological_cancer_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("haematological_cancer", "Haematological cancer") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-### Cystic fibrosis
+<!-- ![](../output/tte/figures/plot_patch_haematological_cancer.svg "outcomes by Haematological cancer"){width="80%"} -->
 
-```{r cystic_fibrosis_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("cystic_fibrosis", "Cystic fibrosis")
-```
 
-&nbsp;
-&nbsp;
 
+<!-- ### Cancer, excluding lung and haematological cancer -->
 
-```{r cystic_fibrosis_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("cystic_fibrosis", "Cystic fibrosis")
-```
+<!-- ```{r cancer_excl_lung_and_haem_cancer_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("cancer_excl_lung_and_haem", "Cancer") -->
+<!-- ``` -->
 
-&nbsp;
-&nbsp;
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-![](../released_outputs/output/tte/figures/plot_patch_cystic_fibrosis.svg "outcomes by Cystic fibrosis"){width="80%"}
 
+<!-- ```{r cancer_excl_lung_and_haem_cancer_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("cancer_excl_lung_and_haem", "Cancer") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
+<!-- ![](../output/tte/figures/plot_patch_cancer_excl_lung_and_haem.svg "outcomes by Cancer, excluding lung and haematological cancer"){width="80%"} -->
 
 
-### Sickle cell disease
 
-```{r sickle_cell_disease_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("sickle_cell_disease", "Sickle cell disease")
-```
 
-&nbsp;
-&nbsp;
 
 
-```{r sickle_cell_disease_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("sickle_cell_disease", "Sickle cell disease")
-```
+<!-- ### Bone marrow transplant -->
 
-&nbsp;
-&nbsp;
+<!-- ```{r bone_marrow_transplant_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("bone_marrow_transplant", "Bone marrow transplant") -->
+<!-- ``` -->
 
-![](../released_outputs/output/tte/figures/plot_patch_sickle_cell_disease.svg "outcomes by Sickle cell disease"){width="80%"}
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
 
+<!-- ```{r bone_marrow_transplant_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("bone_marrow_transplant", "Bone marrow transplant") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-### Permanent immunosuppression
+<!-- ![](../output/tte/figures/plot_patch_bone_marrow_transplant.svg "outcomes by Bone marrow transplant"){width="80%"} -->
 
-```{r permanant_immunosuppression_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("permanant_immunosuppression", "Permanent immunosuppression")
-```
 
-&nbsp;
-&nbsp;
 
 
-```{r permanant_immunosuppression_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("permanant_immunosuppression", "Permanent immunosuppression")
-```
+<!-- ### Cystic fibrosis -->
 
-&nbsp;
-&nbsp;
+<!-- ```{r cystic_fibrosis_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("cystic_fibrosis", "Cystic fibrosis") -->
+<!-- ``` -->
 
-![](../released_outputs/output/tte/figures/plot_patch_permanant_immunosuppression.svg "outcomes by Permanent immunosuppression"){width="80%"}
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
 
-### Temporary immunosuppression
+<!-- ```{r cystic_fibrosis_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("cystic_fibrosis", "Cystic fibrosis") -->
+<!-- ``` -->
 
-```{r temporary_immunosuppression_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("temporary_immunosuppression", "Temporary immunosuppression")
-```
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-&nbsp;
-&nbsp;
+<!-- ![](../output/tte/figures/plot_patch_cystic_fibrosis.svg "outcomes by Cystic fibrosis"){width="80%"} -->
 
 
-```{r temporary_immunosuppression_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("temporary_immunosuppression", "Temporary immunosuppression")
-```
 
-&nbsp;
-&nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_temporary_immunosuppression.svg "outcomes by Temporary immunosuppression"){width="80%"}
 
+<!-- ### Sickle cell disease -->
 
+<!-- ```{r sickle_cell_disease_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("sickle_cell_disease", "Sickle cell disease") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-### Psychosis, Schizophrenia
 
-```{r psychosis_schiz_bipolar_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("psychosis_schiz_bipolar", "Psychosis, Schizophrenia")
-```
+<!-- ```{r sickle_cell_disease_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("sickle_cell_disease", "Sickle cell disease") -->
+<!-- ``` -->
 
-&nbsp;
-&nbsp;
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
+<!-- ![](../output/tte/figures/plot_patch_sickle_cell_disease.svg "outcomes by Sickle cell disease"){width="80%"} -->
 
-```{r psychosis_schiz_bipolar_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("psychosis_schiz_bipolar", "Psychosis, Schizophrenia")
-```
 
-&nbsp;
-&nbsp;
 
-![](../released_outputs/output/tte/figures/plot_patch_psychosis_schiz_bipolar.svg "outcomes by psychosis_schiz_bipolar"){width="80%"}
 
+<!-- ### Permanent immunosuppression -->
 
+<!-- ```{r permanant_immunosuppression_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("permanant_immunosuppression", "Permanent immunosuppression") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-### Asplenia
 
-```{r asplenia_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("asplenia", "Asplenia")
-```
+<!-- ```{r permanant_immunosuppression_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("permanant_immunosuppression", "Permanent immunosuppression") -->
+<!-- ``` -->
 
-&nbsp;
-&nbsp;
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
+<!-- ![](../output/tte/figures/plot_patch_permanant_immunosuppression.svg "outcomes by Permanent immunosuppression"){width="80%"} -->
 
-```{r asplenia_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("asplenia", "Asplenia")
-```
 
-&nbsp;
-&nbsp;
+<!-- ### Temporary immunosuppression -->
 
-![](../released_outputs/output/tte/figures/plot_patch_asplenia.svg "outcomes by Asplenia"){width="80%"}
+<!-- ```{r temporary_immunosuppression_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("temporary_immunosuppression", "Temporary immunosuppression") -->
+<!-- ``` -->
 
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
 
+<!-- ```{r temporary_immunosuppression_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("temporary_immunosuppression", "Temporary immunosuppression") -->
+<!-- ``` -->
 
-### Dementia
+<!-- &nbsp; -->
+<!-- &nbsp; -->
 
-```{r dementia_vacc, echo=FALSE, out.width='90%', results='asis'}
-print_vaccinetype("dementia", "Dementia")
-```
+<!-- ![](../output/tte/figures/plot_patch_temporary_immunosuppression.svg "outcomes by Temporary immunosuppression"){width="80%"} -->
 
-&nbsp;
-&nbsp;
 
 
-```{r dementia_tab, echo=FALSE, out.width='90%', results='asis'}
-print_event_rates("dementia", "Dementia")
-```
 
-&nbsp;
-&nbsp;
+<!-- ### Psychosis, Schizophrenia -->
 
-![](../released_outputs/output/tte/figures/plot_patch_dementia.svg "outcomes by Dementia"){width="80%"}
+<!-- ```{r psychosis_schiz_bipolar_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("psychosis_schiz_bipolar", "Psychosis, Schizophrenia") -->
+<!-- ``` -->
+
+<!-- &nbsp; -->
+<!-- &nbsp; -->
+
+
+<!-- ```{r psychosis_schiz_bipolar_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("psychosis_schiz_bipolar", "Psychosis, Schizophrenia") -->
+<!-- ``` -->
+
+<!-- &nbsp; -->
+<!-- &nbsp; -->
+
+<!-- ![](../output/tte/figures/plot_patch_psychosis_schiz_bipolar.svg "outcomes by psychosis_schiz_bipolar"){width="80%"} -->
+
+
+
+
+<!-- ### Asplenia -->
+
+<!-- ```{r asplenia_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("asplenia", "Asplenia") -->
+<!-- ``` -->
+
+<!-- &nbsp; -->
+<!-- &nbsp; -->
+
+
+<!-- ```{r asplenia_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("asplenia", "Asplenia") -->
+<!-- ``` -->
+
+<!-- &nbsp; -->
+<!-- &nbsp; -->
+
+<!-- ![](../output/tte/figures/plot_patch_asplenia.svg "outcomes by Asplenia"){width="80%"} -->
+
+
+
+
+<!-- ### Dementia -->
+
+<!-- ```{r dementia_vacc, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_vaccinetype("dementia", "Dementia") -->
+<!-- ``` -->
+
+<!-- &nbsp; -->
+<!-- &nbsp; -->
+
+
+<!-- ```{r dementia_tab, echo=FALSE, out.width='90%', results='asis'} -->
+<!-- print_event_rates("dementia", "Dementia") -->
+<!-- ``` -->
+
+<!-- &nbsp; -->
+<!-- &nbsp; -->
+
+<!-- ![](../output/tte/figures/plot_patch_dementia.svg "outcomes by Dementia"){width="80%"} -->
 
 
 

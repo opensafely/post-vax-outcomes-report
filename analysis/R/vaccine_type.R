@@ -15,7 +15,7 @@ data_vaccinated <- read_rds(
 
 dir.create(here::here("output", "vaccine_type", "tables"), showWarnings = FALSE, recursive=TRUE)
 
-c("sex", "ageband", "imd", "ethnicity", "region") %>%
+c("sex", "ageband", "imd", "ethnicity", "region", "bmi", "infection_before_vax") %>%
   set_names(.) %>%
   map(~{
     redacted_summary_catcat(
